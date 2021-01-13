@@ -1159,7 +1159,7 @@ public class TabWirelessUi extends Composite implements NetworkTab {
 
             @Override
             public void onSuccess(GwtXSRFToken token) {
-                TabWirelessUi.this.gwtDeviceService.findDeviceConfiguration(token,
+                TabWirelessUi.this.gwtDeviceService.findDeviceConfiguration(
                         new AsyncCallback<ArrayList<GwtGroupedNVPair>>() {
 
                             @Override

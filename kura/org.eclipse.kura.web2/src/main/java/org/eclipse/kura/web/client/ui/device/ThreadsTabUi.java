@@ -118,7 +118,7 @@ public class ThreadsTabUi extends Composite implements Tab {
 
             @Override
             public void onSuccess(GwtXSRFToken token) {
-                ThreadsTabUi.this.gwtDeviceService.findThreads(token, new AsyncCallback<ArrayList<GwtGroupedNVPair>>() {
+                ThreadsTabUi.this.gwtDeviceService.findThreads(new AsyncCallback<ArrayList<GwtGroupedNVPair>>() {
 
                     @Override
                     public void onFailure(Throwable caught) {

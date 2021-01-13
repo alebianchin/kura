@@ -119,7 +119,7 @@ public class SystemPropertiesTabUi extends Composite implements Tab {
 
             @Override
             public void onSuccess(GwtXSRFToken token) {
-                SystemPropertiesTabUi.this.gwtDeviceService.findSystemProperties(token,
+                SystemPropertiesTabUi.this.gwtDeviceService.findSystemProperties(
                         new AsyncCallback<ArrayList<GwtGroupedNVPair>>() {
 
                             @Override

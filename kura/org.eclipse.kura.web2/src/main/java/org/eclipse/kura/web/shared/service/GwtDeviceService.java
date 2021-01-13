@@ -22,23 +22,25 @@ import org.eclipse.kura.web.shared.model.GwtXSRFToken;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.client.rpc.XsrfProtectedService;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 @RemoteServiceRelativePath("device")
 @RequiredPermissions(KuraPermission.DEVICE)
-public interface GwtDeviceService extends RemoteService {
+public interface GwtDeviceService extends XsrfProtectedService {
 
-    public ArrayList<GwtGroupedNVPair> findDeviceConfiguration(GwtXSRFToken xsrfToken) throws GwtKuraException;
+    public ArrayList<GwtGroupedNVPair> findDeviceConfiguration() throws GwtKuraException;
 
-    public ArrayList<GwtGroupedNVPair> findBundles(GwtXSRFToken xsrfToken) throws GwtKuraException;
+    public ArrayList<GwtGroupedNVPair> findBundles() throws GwtKuraException;
 
-    public void startBundle(GwtXSRFToken xsrfToken, String bundleId) throws GwtKuraException;
+    public void startBundle(String bundleId) throws GwtKuraException;
 
-    public void stopBundle(GwtXSRFToken xsrfToken, String bundleId) throws GwtKuraException;
+    public void stopBundle(String bundleId) throws GwtKuraException;
 
-    public ArrayList<GwtGroupedNVPair> findThreads(GwtXSRFToken xsrfToken) throws GwtKuraException;
+    public ArrayList<GwtGroupedNVPair> findThreads() throws GwtKuraException;
 
     @RequiredPermissions({})
-    public ArrayList<GwtGroupedNVPair> findSystemProperties(GwtXSRFToken xsrfToken) throws GwtKuraException;
+    public ArrayList<GwtGroupedNVPair> findSystemProperties() throws GwtKuraException;
 
-    public String executeCommand(GwtXSRFToken xsrfToken, String cmd, String pwd) throws GwtKuraException;
+    public String executeCommand(String cmd, String pwd) throws GwtKuraException;
 }

@@ -14,6 +14,11 @@ package org.eclipse.kura.web.client.ui.device;
 
 import java.util.ArrayList;
 
+import com.google.gwt.user.client.rpc.XsrfTokenService;
+import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
+import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.user.client.rpc.XsrfToken;
+
 import org.eclipse.kura.web.client.messages.ValidationMessages;
 import org.eclipse.kura.web.client.ui.EntryClassUi;
 import org.eclipse.kura.web.client.ui.Tab;
@@ -31,129 +36,144 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.HasRpcToken;
+import com.google.gwt.user.client.rpc.RpcTokenException;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 public class ProfileTabUi extends Composite implements Tab {
 
-    private static final String DEV_INFO = "devInfo";
+	private static final String DEV_INFO = "devInfo";
 
-    private static ProfileTabUiUiBinder uiBinder = GWT.create(ProfileTabUiUiBinder.class);
+	private static ProfileTabUiUiBinder uiBinder = GWT.create(ProfileTabUiUiBinder.class);
 
-    interface ProfileTabUiUiBinder extends UiBinder<Widget, ProfileTabUi> {
-    }
+	interface ProfileTabUiUiBinder extends UiBinder<Widget, ProfileTabUi> {
+	}
 
-    private static final ValidationMessages msgs = GWT.create(ValidationMessages.class);
+	private static final ValidationMessages msgs = GWT.create(ValidationMessages.class);
 
-    private final GwtSecurityTokenServiceAsync gwtXSRFService = GWT.create(GwtSecurityTokenService.class);
-    private final GwtDeviceServiceAsync gwtDeviceService = GWT.create(GwtDeviceService.class);
+	private final GwtSecurityTokenServiceAsync gwtXSRFService = GWT.create(GwtSecurityTokenService.class);
+	private final GwtDeviceServiceAsync gwtDeviceService = GWT.create(GwtDeviceService.class);
 
-    @UiField
-    CellTable<GwtGroupedNVPair> profileGrid = new CellTable<>();
-    private final ListDataProvider<GwtGroupedNVPair> profileDataProvider = new ListDataProvider<>();
+	@UiField
+	CellTable<GwtGroupedNVPair> profileGrid = new CellTable<>();
+	private final ListDataProvider<GwtGroupedNVPair> profileDataProvider = new ListDataProvider<>();
 
-    public ProfileTabUi() {
-        initWidget(uiBinder.createAndBindUi(this));
+	public ProfileTabUi() {
+		initWidget(uiBinder.createAndBindUi(this));
 
-        this.profileGrid.setRowStyles((row, rowIndex) -> row.getValue().contains("  ") ? "rowHeader" : " ");
+		this.profileGrid.setRowStyles((row, rowIndex) -> row.getValue().contains("  ") ? "rowHeader" : " ");
 
-        loadProfileTable(this.profileGrid, this.profileDataProvider);
-    }
+		loadProfileTable(this.profileGrid, this.profileDataProvider);
+	}
 
-    private void loadProfileTable(CellTable<GwtGroupedNVPair> profileGrid2,
-            ListDataProvider<GwtGroupedNVPair> dataProvider) {
+	private void loadProfileTable(CellTable<GwtGroupedNVPair> profileGrid2,
+			ListDataProvider<GwtGroupedNVPair> dataProvider) {
 
-        TextColumn<GwtGroupedNVPair> col1 = new TextColumn<GwtGroupedNVPair>() {
+		TextColumn<GwtGroupedNVPair> col1 = new TextColumn<GwtGroupedNVPair>() {
 
-            @Override
-            public String getValue(GwtGroupedNVPair object) {
-                return msgs.getString(object.getName());
-            }
-        };
-        col1.setCellStyleNames("status-table-row");
-        profileGrid2.addColumn(col1);
+			@Override
+			public String getValue(GwtGroupedNVPair object) {
+				return msgs.getString(object.getName());
+			}
+		};
+		col1.setCellStyleNames("status-table-row");
+		profileGrid2.addColumn(col1);
 
-        TextColumn<GwtGroupedNVPair> col2 = new TextColumn<GwtGroupedNVPair>() {
+		TextColumn<GwtGroupedNVPair> col2 = new TextColumn<GwtGroupedNVPair>() {
 
-            @Override
-            public String getValue(GwtGroupedNVPair object) {
-                return String.valueOf(object.getValue());
-            }
-        };
-        col2.setCellStyleNames("status-table-row");
-        profileGrid2.addColumn(col2);
+			@Override
+			public String getValue(GwtGroupedNVPair object) {
+				return String.valueOf(object.getValue());
+			}
+		};
+		col2.setCellStyleNames("status-table-row");
+		profileGrid2.addColumn(col2);
 
-        dataProvider.addDataDisplay(profileGrid2);
-    }
+		dataProvider.addDataDisplay(profileGrid2);
+	}
 
-    @Override
-    public void setDirty(boolean flag) {
-    }
+	@Override
+	public void setDirty(boolean flag) {
+	}
 
-    @Override
-    public boolean isDirty() {
-        return true;
-    }
+	@Override
+	public boolean isDirty() {
+		return true;
+	}
 
-    @Override
-    public boolean isValid() {
-        return true;
-    }
+	@Override
+	public boolean isValid() {
+		return true;
+	}
 
-    @Override
-    public void refresh() {
-        this.profileDataProvider.getList().clear();
+	@Override
+	public void refresh() {
+		this.profileDataProvider.getList().clear();
 
-        EntryClassUi.showWaitModal();
-        this.gwtXSRFService.generateSecurityToken(new AsyncCallback<GwtXSRFToken>() {
+		EntryClassUi.showWaitModal();
 
-            @Override
-            public void onFailure(Throwable ex) {
-                EntryClassUi.hideWaitModal();
-                FailureHandler.handle(ex);
-            }
+		XsrfTokenServiceAsync xsrf = (XsrfTokenServiceAsync) GWT.create(XsrfTokenService.class);
+		((ServiceDefTarget) xsrf).setServiceEntryPoint("/gwt/xsrf");
+		xsrf.getNewXsrfToken(new AsyncCallback<XsrfToken>() {
 
-            @Override
-            public void onSuccess(GwtXSRFToken token) {
-                ProfileTabUi.this.gwtDeviceService.findDeviceConfiguration(token,
-                        new AsyncCallback<ArrayList<GwtGroupedNVPair>>() {
+			public void onSuccess(XsrfToken token) {
+				GwtDeviceServiceAsync rpc = (GwtDeviceServiceAsync) GWT.create(GwtDeviceService.class);
+				((HasRpcToken) rpc).setRpcToken(token);
 
-                            @Override
-                            public void onFailure(Throwable caught) {
-                                EntryClassUi.hideWaitModal();
-                                ProfileTabUi.this.profileDataProvider.getList().clear();
-                                FailureHandler.handle(caught);
-                                ProfileTabUi.this.profileDataProvider.flush();
+				// make XSRF protected RPC call
+				rpc.findDeviceConfiguration(new AsyncCallback<ArrayList<GwtGroupedNVPair>>() {
 
-                            }
+					@Override
+					public void onFailure(Throwable caught) {
+						EntryClassUi.hideWaitModal();
+						ProfileTabUi.this.profileDataProvider.getList().clear();
+						FailureHandler.handle(caught);
+						ProfileTabUi.this.profileDataProvider.flush();
 
-                            @Override
-                            public void onSuccess(ArrayList<GwtGroupedNVPair> result) {
-                                String oldGroup = DEV_INFO;
-                                ProfileTabUi.this.profileDataProvider.getList()
-                                        .add(new GwtGroupedNVPair(DEV_INFO, DEV_INFO, "  "));
-                                for (GwtGroupedNVPair resultPair : result) {
-                                    if (!oldGroup.equals(resultPair.getGroup())) {
-                                        ProfileTabUi.this.profileDataProvider.getList().add(new GwtGroupedNVPair(
-                                                resultPair.getGroup(), resultPair.getGroup(), "  "));
-                                        oldGroup = resultPair.getGroup();
-                                    }
-                                    ProfileTabUi.this.profileDataProvider.getList().add(resultPair);
-                                }
-                                int size = ProfileTabUi.this.profileDataProvider.getList().size();
-                                ProfileTabUi.this.profileGrid.setVisibleRange(0, size);
-                                ProfileTabUi.this.profileDataProvider.flush();
-                                EntryClassUi.hideWaitModal();
-                            }
-                        });
-            }
+					}
 
-        });
-    }
+					@Override
+					public void onSuccess(ArrayList<GwtGroupedNVPair> result) {
+						String oldGroup = DEV_INFO;
+						ProfileTabUi.this.profileDataProvider.getList()
+								.add(new GwtGroupedNVPair(DEV_INFO, DEV_INFO, "  "));
+						for (GwtGroupedNVPair resultPair : result) {
+							if (!oldGroup.equals(resultPair.getGroup())) {
+								ProfileTabUi.this.profileDataProvider.getList()
+										.add(new GwtGroupedNVPair(resultPair.getGroup(), resultPair.getGroup(), "  "));
+								oldGroup = resultPair.getGroup();
+							}
+							ProfileTabUi.this.profileDataProvider.getList().add(resultPair);
+						}
+						int size = ProfileTabUi.this.profileDataProvider.getList().size();
+						ProfileTabUi.this.profileGrid.setVisibleRange(0, size);
+						ProfileTabUi.this.profileDataProvider.flush();
+						EntryClassUi.hideWaitModal();
+					}
+				});
+			}
 
-    @Override
-    public void clear() {
-        // Not needed
-    }
+			public void onFailure(Throwable caught) {
+				try {
+					throw caught;
+				} catch (RpcTokenException e) {
+					// Can be thrown for several reasons:
+					// - duplicate session cookie, which may be a sign of a cookie
+					// overwrite attack
+					// - XSRF token cannot be generated because session cookie isn't
+					// present
+				} catch (Throwable e) {
+					// unexpected
+				}
+			}
+		});
+
+	}
+
+	@Override
+	public void clear() {
+		// Not needed
+	}
 }

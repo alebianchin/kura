@@ -130,7 +130,7 @@ public class CommandTabUi extends Composite {
                         @Override
                         public void onSuccess(Void result) {
                             CommandTabUi.this.gwtXSRFService.generateSecurityToken(
-                                    c.callback(t -> CommandTabUi.this.gwtDeviceService.executeCommand(t,
+                                    c.callback(t -> CommandTabUi.this.gwtDeviceService.executeCommand(
                                             CommandTabUi.this.formExecute.getText(),
                                             CommandTabUi.this.formPassword.getText(),
                                             c.callback(new AsyncCallback<String>() {

@@ -44,7 +44,11 @@ import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements GwtDeviceService {
+import com.google.gwt.user.client.rpc.XsrfToken;
+import com.google.gwt.user.client.rpc.XsrfTokenService;
+import com.google.gwt.user.server.rpc.XsrfProtect;
+
+public class GwtDeviceServiceImpl extends NewOsgiRemoteServiceServlet implements GwtDeviceService {
 
     private static final String DEV_JAVA = "devJava";
 
@@ -63,8 +67,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
     private static final long serialVersionUID = -4176701819112753800L;
 
     @Override
-    public ArrayList<GwtGroupedNVPair> findDeviceConfiguration(GwtXSRFToken xsrfToken) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public ArrayList<GwtGroupedNVPair> findDeviceConfiguration() throws GwtKuraException {
         List<GwtGroupedNVPair> pairs = new ArrayList<>();
 
         SystemService systemService = ServiceLocator.getInstance().getService(SystemService.class);
@@ -125,8 +128,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
 
     @SuppressWarnings("unchecked")
     @Override
-    public ArrayList<GwtGroupedNVPair> findThreads(GwtXSRFToken xsrfToken) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public ArrayList<GwtGroupedNVPair> findThreads() throws GwtKuraException {
         List<GwtGroupedNVPair> pairs = new ArrayList<>();
 
         // get root thread group
@@ -192,8 +194,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public ArrayList<GwtGroupedNVPair> findSystemProperties(GwtXSRFToken xsrfToken) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public ArrayList<GwtGroupedNVPair> findSystemProperties() throws GwtKuraException {
         List<GwtGroupedNVPair> pairs = new ArrayList<>();
         // kura properties
         SystemService systemService = ServiceLocator.getInstance().getService(SystemService.class);
@@ -207,8 +208,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
     }
 
     @Override
-    public ArrayList<GwtGroupedNVPair> findBundles(GwtXSRFToken xsrfToken) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public ArrayList<GwtGroupedNVPair> findBundles() throws GwtKuraException {
         List<GwtGroupedNVPair> pairs = new ArrayList<>();
 
         SystemService systemService = ServiceLocator.getInstance().getService(SystemService.class);
@@ -233,8 +233,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
     }
 
     @Override
-    public void startBundle(GwtXSRFToken xsrfToken, String bundleId) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public void startBundle(String bundleId) throws GwtKuraException {
         final HttpServletRequest request = getThreadLocalRequest();
         final HttpSession session = request.getSession(false);
 
@@ -267,8 +266,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
     }
 
     @Override
-    public void stopBundle(GwtXSRFToken xsrfToken, String bundleId) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public void stopBundle(String bundleId) throws GwtKuraException {
 
         final HttpServletRequest request = getThreadLocalRequest();
         final HttpSession session = request.getSession(false);
@@ -304,8 +302,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
     }
 
     @Override
-    public String executeCommand(GwtXSRFToken xsrfToken, String cmd, String pwd) throws GwtKuraException {
-        checkXSRFToken(xsrfToken);
+    public String executeCommand(String cmd, String pwd) throws GwtKuraException {
 
         final HttpServletRequest request = getThreadLocalRequest();
         final HttpSession session = request.getSession(false);
@@ -420,6 +417,7 @@ public class GwtDeviceServiceImpl extends OsgiRemoteServiceServlet implements Gw
 
         return sb.toString();
     }
+
 }
 
 @SuppressWarnings("rawtypes")

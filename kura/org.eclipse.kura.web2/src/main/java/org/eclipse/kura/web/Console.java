@@ -93,6 +93,8 @@ import org.osgi.service.useradmin.UserAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gwt.user.server.rpc.XsrfTokenServiceServlet;
+
 public class Console implements SelfConfiguringComponent, org.eclipse.kura.web.api.Console {
 
     private static final String EVENT_PATH = "/event";
@@ -308,6 +310,9 @@ public class Console implements SelfConfiguringComponent, org.eclipse.kura.web.a
         this.httpService.unregister(LOGIN_MODULE_PATH + "/loginInfo");
         this.httpService.unregister(DENALI_MODULE_PATH + "/session");
         this.httpService.unregister(DENALI_MODULE_PATH + "/xsrf");
+   
+        this.httpService.unregister("/gwt/xsrf");
+        
         this.httpService.unregister(DENALI_MODULE_PATH + "/status");
         this.httpService.unregister(DENALI_MODULE_PATH + "/device");
         this.httpService.unregister(DENALI_MODULE_PATH + "/network");
@@ -442,6 +447,10 @@ public class Console implements SelfConfiguringComponent, org.eclipse.kura.web.a
                 this.sessionContext);
         this.httpService.registerServlet(DENALI_MODULE_PATH + "/xsrf", new GwtSecurityTokenServiceImpl(), null,
                 this.sessionContext);
+        
+        this.httpService.registerServlet("/gwt/xsrf", new XsrfTokenServiceServlet("JSESSIONID"), null,
+                this.sessionContext);
+        
         this.httpService.registerServlet(DENALI_MODULE_PATH + "/status", new GwtStatusServiceImpl(), null,
                 this.sessionContext);
         this.httpService.registerServlet(DENALI_MODULE_PATH + "/device", new GwtDeviceServiceImpl(), null,
